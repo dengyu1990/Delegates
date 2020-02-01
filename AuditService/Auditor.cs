@@ -13,6 +13,9 @@ namespace AuditService
 {
     public class Auditor
     {
+        public delegate void AuditingCompleteDelegate(string message);
+        public event AuditingCompleteDelegate AuditProcessingComplete;
+        
         public void AuditOrder(Order order)
         {
             this.doAuditing(order);
@@ -29,7 +32,7 @@ namespace AuditService
                     if (file != null)
                     {
                         XmlDocument doc = new XmlDocument();
-                        XmlElement root = doc.CreateElement("Order");                        
+                        XmlElement root = doc.CreateElement("Order");
                         root.SetAttribute("ID", order.OrderID.ToString());
                         root.SetAttribute("Date", order.Date.ToString());
 
@@ -55,6 +58,13 @@ namespace AuditService
                 {
                     MessageDialog dlg = new MessageDialog(ex.Message, "Exception");
                     dlg.ShowAsync();
+                }
+                finally
+                {
+                    if (this.AuditProcessingComplete != null)
+                    {
+                        this.AuditProcessingComplete($"Audit record written for Order {order.OrderID}");
+                    }
                 }
             }
         }

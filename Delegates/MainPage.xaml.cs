@@ -42,6 +42,8 @@ namespace Delegates
             this.checkoutController = new CheckoutController();
             this.checkoutController.CheckoutProcessing += this.auditor.AuditOrder;
             this.checkoutController.CheckoutProcessing += this.shipper.ShipOrder;
+            this.auditor.AuditProcessingComplete += this.displayMessage;
+            this.shipper.ShipProcessingComplete += this.displayMessage;
         }
 
         private void MainPageLoaded(object sender, RoutedEventArgs e)
@@ -114,10 +116,6 @@ namespace Delegates
                 // Perform the checkout processing
                 this.checkoutController.StartCheckoutProcessing(this.order);
 
-                // Display a summary of the order
-                MessageDialog dlg = new MessageDialog($"Order {order.OrderID}, value {order.TotalValue:C}", "Order Placed");
-                dlg.ShowAsync();
-
                 // Clear out the order details so the user can start again with a new order
                 this.order = new Order { Date = DateTime.Now, Items = new List<OrderItem>(), OrderID = Guid.NewGuid(), TotalValue = 0 };
                 this.orderDetails.DataContext = null;
@@ -132,6 +130,9 @@ namespace Delegates
             }
         }
 
-
+        private void displayMessage(string message)
+        {
+            this.messageBar.Text += $"{message}{Environment.NewLine}";
+        }
     }
 }
